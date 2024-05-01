@@ -1,0 +1,43 @@
+﻿@* @page "/Todo/Create/{id}" *@
+@page "/Todo/Create"
+
+<h3>TodoCreate</h3>
+
+<MudPaper Class="pa-4">
+    <MudForm @ref="form" @bind-Errors="errors" >
+        <MudNumericField @bind-Value="id" Label="ID" Variant="Variant.Text" Required="true" RequiredError="ID is required!"/>
+        <MudTextField @bind-Value="description" Label="Description" Variant="Variant.Text" Required="true" RequiredError="Description is required!"></MudTextField>
+        <br />
+        <MudCheckBox Label="Complete" @bind-Value="isCompleted" Color="Color.Primary"></MudCheckBox>
+        <MudDatePicker Label="Due date" @bind-Date="date" Color="Color.Primary"></MudDatePicker>
+
+        <div class="pa-3" style="width: auto; display: flex; flex-direction: row; justify-content: center;">
+            <div><MudButton Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" @onclick="OnAddClickAsync">Add</MudButton></div>
+        </div>
+    </MudForm>
+</MudPaper>
+
+@code {
+    //[Parameter] public int id { get; set; }
+
+    [CascadingParameter] public ApplicationState State { get; set; }
+    [Inject] public NavigationManager manager { get; set; }
+    [Inject] public IDbContextFactory<TodoContext> Factory { get; set; }
+
+    string[] errors = { };
+
+    private string description { get; set; }
+    private int id { get; set; }
+    private bool isCompleted { get; set; }
+    private DateTime? date { get; set; }
+
+    MudForm form;
+
+    public async Task OnAddClickAsync()
+    {
+        using var db = await Factory.CreateDbContextAsync();
+        await db.Items.AddAsync(new Todo { Id = id, Description = description, IsCompleted = isCompleted, DueDate = (date ?? null) });
+        await db.SaveChangesAsync();
+        manager.NavigateTo("/Todo");
+    }
+}

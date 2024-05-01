@@ -1,0 +1,52 @@
+﻿@page "/Todo"
+<h1>Todo Page</h1>
+
+@foreach(var item in Items)
+{
+    <MudCard Style="background-image: linear-gradient(90deg, rgb(5, 39, 103) 0%, #3a0647 70%); color: white;">
+        <MudCardHeader>
+            <CardHeaderContent>
+                <MudText Typo="Typo.h6">
+                    @item.Description
+                    @if (item.IsCompleted)
+                    {
+                        <MudIcon style="-webkit-margin-start: 10px" Icon="@Icons.Material.Filled.Check" />
+                    }
+                </MudText>
+            </CardHeaderContent>
+            <CardHeaderActions>
+                <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Inherit" />
+                <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Inherit" />
+            </CardHeaderActions>
+        </MudCardHeader>
+        <MudCardContent>
+            @if(item.DueDate != null)
+            {
+                <MudText>Due in @item.DueDate</MudText>               
+            }
+        </MudCardContent>
+    </MudCard>
+    <br />
+}
+
+<button class="btn btn-primary" @onclick="OnAddClick">Add</button>
+
+
+@code {
+    [CascadingParameter] public ApplicationState State { get; set; }
+    [Inject] public NavigationManager manager { get; set; }
+    [Inject] public IDbContextFactory<TodoContext> Factory { get; set; }
+    public List<Todo> Items { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        using var context = await Factory.CreateDbContextAsync();
+        Items = await context.Items.ToListAsync();
+        base.OnInitialized();
+    }
+
+    public void OnAddClick()
+    {
+        manager.NavigateTo("Todo/Create");
+    }
+}
